@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+#MISE description="Benchmark zerobrew vs homebrew installation times"
+set -euo pipefail
+
+# Packages to benchmark (small, common tools)
+PACKAGES=("jq" "tree" "wget")
+
+echo "=== Zerobrew vs Homebrew Benchmark ==="
+echo ""
+
+# Check prerequisites
+if ! command -v zb &>/dev/null; then
+    echo "✗ zerobrew (zb) not found"
+    exit 1
+fi
+
+if ! command -v brew &>/dev/null; then
+    echo "✗ homebrew (brew) not found"
+    exit 1
+fi
+
+echo "zerobrew: $(zb --version)"
+echo "homebrew: $(brew --version | head -1)"
+echo ""
+
+# Function to time a command
+time_cmd() {
+    local start end
+    start=$(date +%s.%N)
+    "$@" >/dev/null 2>&1
+    end=$(date +%s.%N)
+    echo "scale=2; $end - $start" | bc
+}
+
+# Create temp directories for isolated installs
+ZB_ROOT=$(mktemp -d)
+trap "rm -rf $ZB_ROOT" EXIT
+
+echo "=== Cold Install (no cache) ==="
+echo ""
+
+# Clear zerobrew cache
+rm -rf "$ZB_ROOT"
+mkdir -p "$ZB_ROOT"
+
+printf "%-12s %12s %12s %12s\n" "Package" "Homebrew" "Zerobrew" "Speedup"
+printf "%-12s %12s %12s %12s\n" "-------" "--------" "--------" "-------"
+
+for pkg in "${PACKAGES[@]}"; do
+    # Uninstall from homebrew if exists (ignore errors)
+    brew uninstall --ignore-dependencies "$pkg" &>/dev/null || true
+
+    # Time homebrew install
+    brew_time=$(time_cmd brew install "$pkg")
+    brew uninstall --ignore-dependencies "$pkg" &>/dev/null || true
+
+    # Time zerobrew install (fresh root each time for cold test)
+    rm -rf "$ZB_ROOT"
+    mkdir -p "$ZB_ROOT"
+    zb_time=$(time_cmd zb --root "$ZB_ROOT" install "$pkg")
+
+    # Calculate speedup
+    speedup=$(echo "scale=1; $brew_time / $zb_time" | bc)
+
+    printf "%-12s %10.2fs %10.2fs %10.1fx\n" "$pkg" "$brew_time" "$zb_time" "$speedup"
+done
+
+echo ""
+echo "=== Warm Install (cached) ==="
+echo ""
+
+# Pre-populate zerobrew cache
+rm -rf "$ZB_ROOT"
+mkdir -p "$ZB_ROOT"
+for pkg in "${PACKAGES[@]}"; do
+    zb --root "$ZB_ROOT" install "$pkg" >/dev/null 2>&1
+done
+
+printf "%-12s %12s %12s %12s\n" "Package" "Homebrew" "Zerobrew" "Speedup"
+printf "%-12s %12s %12s %12s\n" "-------" "--------" "--------" "-------"
+
+for pkg in "${PACKAGES[@]}"; do
+    # Homebrew warm (it has its own cache from cold run)
+    brew uninstall --ignore-dependencies "$pkg" &>/dev/null || true
+    brew_time=$(time_cmd brew install "$pkg")
+    brew uninstall --ignore-dependencies "$pkg" &>/dev/null || true
+
+    # Zerobrew warm - reinstall with existing cache
+    zb --root "$ZB_ROOT" uninstall "$pkg" >/dev/null 2>&1 || true
+    zb_time=$(time_cmd zb --root "$ZB_ROOT" install "$pkg")
+
+    # Calculate speedup
+    speedup=$(echo "scale=1; $brew_time / $zb_time" | bc)
+
+    printf "%-12s %10.2fs %10.2fs %10.1fx\n" "$pkg" "$brew_time" "$zb_time" "$speedup"
+done
+
+echo ""
+echo "=== Done ==="
