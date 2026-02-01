@@ -19,6 +19,19 @@ function PLUGIN:BackendInstall(ctx)
 
     local cmd = require("cmd")
 
+    -- Check if zerobrew is installed
+    local zb_check = cmd.exec("which zb 2>/dev/null || true")
+    if zb_check == "" then
+        error([[
+zerobrew (zb) not found in PATH.
+
+Install zerobrew first:
+  rustup run nightly cargo install --git https://github.com/lucasgelfond/zerobrew
+
+For more info: https://github.com/lucasgelfond/zerobrew
+]])
+    end
+
     -- Determine the actual formula name to install
     local formula
     if version == "latest" then
