@@ -4,7 +4,7 @@
 
 PLUGIN = { -- luacheck: ignore
     name = "zerobrew",
-    version = "0.1.0",
+    version = "0.2.0",
     description = "Install Homebrew formulae via zerobrew (faster Homebrew alternative)",
     author = "kennyg",
     homepage = "https://github.com/kennyg/mise-zerobrew",
