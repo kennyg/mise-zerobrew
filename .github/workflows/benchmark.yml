@@ -38,7 +38,9 @@ jobs:
 
       - name: Post summary
         run: |
-          echo "## Benchmark Results" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat benchmark-results.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Benchmark Results"
+            echo '```'
+            cat benchmark-results.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,26 +1,23 @@
-amends "package://github.com/jdx/hk/releases/download/v1.2.0/hk@1.2.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.2.0/hk@1.2.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v1.36.0/hk@1.36.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.36.0/hk@1.36.0#/Builtins.pkl"
 
 local linters = new Mapping<String, Step> {
-    ["luacheck"] {
-        glob = "**/*.lua"
-        check = "luarocks install luacheck --local || true && ~/.luarocks/bin/luacheck {{files}}"
-    }
-    ["stylua"] {
-        glob = "**/*.lua"
-        check = "stylua --check {{files}}"
-        fix = "stylua {{files}}"
-    }
-    ["actionlint"] {
-        glob = ".github/workflows/*.{yml,yaml}"
-        check = "actionlint {{files}}"
-    }
+    ["stylua"] = Builtins.stylua
+    ["luacheck"] = Builtins.luacheck
+    ["shellcheck"] = Builtins.shellcheck
+    ["actionlint"] = Builtins.actionlint
+    ["typos"] = Builtins.typos
+    ["trailing-whitespace"] = Builtins.trailing_whitespace
+    ["check-merge-conflict"] = Builtins.check_merge_conflict
 }
 
 hooks {
     ["pre-commit"] {
         fix = true
         stash = "git"
+        steps = linters
+    }
+    ["pre-push"] {
         steps = linters
     }
     ["fix"] {

@@ -13,7 +13,7 @@ read_globals = {
     -- vfox modules available in backend plugins
     "require",
     "cmd",    -- Command execution module
-    "http",   -- HTTP client module  
+    "http",   -- HTTP client module
     "json",   -- JSON parsing module
     "file",   -- File operations module
 

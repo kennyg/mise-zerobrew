@@ -56,8 +56,12 @@ function PLUGIN:BackendListVersions(ctx)
     -- Sort versions semantically (3.9 < 3.10 < 3.11, not lexicographically)
     table.sort(versions, function(a, b)
         -- Keep "latest" at the end
-        if a == "latest" then return false end
-        if b == "latest" then return true end
+        if a == "latest" then
+            return false
+        end
+        if b == "latest" then
+            return true
+        end
 
         -- Split versions into numeric parts for proper comparison
         local function parse_version(v)
@@ -72,9 +76,13 @@ function PLUGIN:BackendListVersions(ctx)
         for i = 1, math.max(#pa, #pb) do
             local va, vb = pa[i] or 0, pb[i] or 0
             if type(va) == "number" and type(vb) == "number" then
-                if va ~= vb then return va < vb end
+                if va ~= vb then
+                    return va < vb
+                end
             else
-                if tostring(va) ~= tostring(vb) then return tostring(va) < tostring(vb) end
+                if tostring(va) ~= tostring(vb) then
+                    return tostring(va) < tostring(vb)
+                end
             end
         end
         return false

@@ -26,7 +26,7 @@ function PLUGIN:BackendInstall(ctx)
 zerobrew (zb) not found in PATH.
 
 Install zerobrew first:
-  rustup run nightly cargo install --git https://github.com/lucasgelfond/zerobrew
+  curl -fsSL https://zerobrew.rs/install | bash
 
 For more info: https://github.com/lucasgelfond/zerobrew
 ]])

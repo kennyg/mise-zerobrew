@@ -33,7 +33,7 @@ Run benchmarks locally: `mise run benchmark`
 1. Install [mise](https://mise.jdx.dev/getting-started.html)
 2. Install [zerobrew](https://github.com/lucasgelfond/zerobrew):
    ```bash
-   rustup run nightly cargo install --git https://github.com/lucasgelfond/zerobrew
+   curl -fsSL https://zerobrew.rs/install | bash
    ```
 
 ## Installation
