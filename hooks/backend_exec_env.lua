@@ -6,16 +6,14 @@ function PLUGIN:BackendExecEnv(ctx)
 
     local file = require("file")
 
-    -- zerobrew installs to {root}/prefix/ with bin/, lib/, include/, etc.
-    local prefix_path = file.join_path(install_path, "prefix")
-    local bin_path = file.join_path(prefix_path, "bin")
+    -- zerobrew installs directly under {install_path} (bin/, lib/, include/, ...)
+    local bin_path = file.join_path(install_path, "bin")
 
     local env_vars = {
         { key = "PATH", value = bin_path },
     }
 
-    -- Add lib paths for tools that need dynamic libraries
-    local lib_path = file.join_path(prefix_path, "lib")
+    local lib_path = file.join_path(install_path, "lib")
 
     if RUNTIME.osType == "Darwin" then
         table.insert(env_vars, { key = "DYLD_LIBRARY_PATH", value = lib_path })
@@ -23,13 +21,11 @@ function PLUGIN:BackendExecEnv(ctx)
         table.insert(env_vars, { key = "LD_LIBRARY_PATH", value = lib_path })
     end
 
-    -- Add include path for development headers
-    local include_path = file.join_path(prefix_path, "include")
+    local include_path = file.join_path(install_path, "include")
     table.insert(env_vars, { key = "C_INCLUDE_PATH", value = include_path })
     table.insert(env_vars, { key = "CPLUS_INCLUDE_PATH", value = include_path })
 
-    -- Add pkg-config path
-    local pkgconfig_path = file.join_path(prefix_path, "lib", "pkgconfig")
+    local pkgconfig_path = file.join_path(install_path, "lib", "pkgconfig")
     table.insert(env_vars, { key = "PKG_CONFIG_PATH", value = pkgconfig_path })
 
     return {
