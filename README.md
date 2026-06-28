@@ -31,10 +31,19 @@ Run benchmarks locally: `mise run benchmark`
 ## Prerequisites
 
 1. Install [mise](https://mise.jdx.dev/getting-started.html)
-2. Install [zerobrew](https://github.com/lucasgelfond/zerobrew):
+2. Install [zerobrew](https://github.com/lucasgelfond/zerobrew), either with its
+   installer:
    ```bash
    curl -fsSL https://zerobrew.rs/install | bash
    ```
+   ...or natively through mise (no Homebrew required), since `zb` is a
+   self-contained Rust binary published as a GitHub release:
+   ```bash
+   mise use -g "github:lucasgelfond/zerobrew[matching=zb-,rename_exe=zb]"
+   ```
+   (`matching=zb-` selects the `zb` binary over `zbx`; `rename_exe=zb` names
+   the command `zb`.)
+   Either way, `zb` must be resolvable via `command -v zb` or `mise which zb`.
 
 ## Installation
 
@@ -78,7 +87,21 @@ The plugin queries the [Homebrew API](https://formulae.brew.sh/api/formula.json)
 
 ### Installation
 
-Each tool+version combination gets its own isolated zerobrew installation:
+Each tool+version combination gets its own isolated zerobrew installation. The
+on-disk layout differs by OS, mirroring zerobrew's own `default_prefix_for_os`:
+
+On **macOS** (zerobrew >= 0.1.2) the tree is flat under the install root (the
+prefix equals the root to stay within the Mach-O path-length limit):
+```
+~/.local/share/mise/installs/zerobrew-{tool}/{version}/
+├── bin/           # Symlinks to binaries (mise uses this)
+├── lib/           # Libraries
+├── Cellar/        # Actual package files
+├── store/         # Content-addressable cache
+└── db/            # SQLite tracking database
+```
+
+On **Linux** (all versions) the prefix is nested under `prefix/`:
 ```
 ~/.local/share/mise/installs/zerobrew-{tool}/{version}/
 ├── prefix/
@@ -88,6 +111,8 @@ Each tool+version combination gets its own isolated zerobrew installation:
 ├── store/         # Content-addressable cache
 └── db/            # SQLite tracking database
 ```
+
+The env hook (`backend_exec_env.lua`) detects whichever layout is present.
 
 The plugin uses `zb --root <path> install <formula>` to isolate each installation.
 
