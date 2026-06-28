@@ -19,14 +19,28 @@ function PLUGIN:BackendInstall(ctx)
 
     local cmd = require("cmd")
 
-    -- Check if zerobrew is installed
-    local zb_check = cmd.exec("which zb 2>/dev/null || true")
-    if zb_check == "" then
+    -- Resolve the zb binary. A bare `which zb` fails when zerobrew is
+    -- installed *via mise itself* (e.g. `mise use -g cargo:zb_cli`), because
+    -- mise's shim directory is not on the hook subprocess's PATH even though
+    -- `mise which zb` resolves it. Fall back to `mise which zb` before giving
+    -- up. See https://github.com/kennyg/mise-zerobrew/issues/3
+    local function trim(s)
+        return (s or ""):gsub("^%s+", ""):gsub("%s+$", "")
+    end
+
+    local zb_bin = trim(cmd.exec("command -v zb 2>/dev/null || true"))
+    if zb_bin == "" then
+        zb_bin = trim(cmd.exec("mise which zb 2>/dev/null || true"))
+    end
+    if zb_bin == "" then
         error([[
 zerobrew (zb) not found in PATH.
 
 Install zerobrew first:
   curl -fsSL https://zerobrew.rs/install | bash
+
+Or install it via mise (no Homebrew required):
+  mise use -g "ubi:lucasgelfond/zerobrew[exe=zb]"
 
 For more info: https://github.com/lucasgelfond/zerobrew
 ]])
@@ -47,11 +61,12 @@ For more info: https://github.com/lucasgelfond/zerobrew
         error("Invalid formula name: " .. formula)
     end
 
-    -- Shell-quote the install path in case it contains spaces
+    -- Shell-quote the install path and zb binary in case they contain spaces
     local quoted_path = "'" .. install_path:gsub("'", "'\\''") .. "'"
+    local quoted_zb = "'" .. zb_bin:gsub("'", "'\\''") .. "'"
 
     -- zerobrew creates its own directory structure at install_path
-    local result, install_err = cmd.exec("zb --root " .. quoted_path .. " install " .. formula)
+    local result, install_err = cmd.exec(quoted_zb .. " --root " .. quoted_path .. " install " .. formula)
 
     if install_err then
         error("Failed to install " .. formula .. ": " .. install_err)
