@@ -40,7 +40,7 @@ Install zerobrew first:
   curl -fsSL https://zerobrew.rs/install | bash
 
 Or install it via mise (no Homebrew required):
-  mise use -g "ubi:lucasgelfond/zerobrew[exe=zb]"
+  mise use -g "github:lucasgelfond/zerobrew[matching=zb-,rename_exe=zb]"
 
 For more info: https://github.com/lucasgelfond/zerobrew
 ]])

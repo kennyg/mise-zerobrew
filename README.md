@@ -37,10 +37,12 @@ Run benchmarks locally: `mise run benchmark`
    curl -fsSL https://zerobrew.rs/install | bash
    ```
    ...or natively through mise (no Homebrew required), since `zb` is a
-   self-contained Rust binary:
+   self-contained Rust binary published as a GitHub release:
    ```bash
-   mise use -g "ubi:lucasgelfond/zerobrew[exe=zb]"
+   mise use -g "github:lucasgelfond/zerobrew[matching=zb-,rename_exe=zb]"
    ```
+   (`matching=zb-` selects the `zb` binary over `zbx`; `rename_exe=zb` names
+   the command `zb`.)
    Either way, `zb` must be resolvable via `command -v zb` or `mise which zb`.
 
 ## Installation
